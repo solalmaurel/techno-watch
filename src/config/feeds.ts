@@ -67,4 +67,4 @@ export const RSS_FEEDS: FeedConfig[] = [
 
 export const BRAVE_SEARCH_QUERIES = ["AI news", "tech news"];
 
-export const DEFAULT_ARTICLE_LIMIT = 30;
+export const DEFAULT_ARTICLE_LIMIT = 100;

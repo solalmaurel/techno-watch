@@ -1,103 +1,151 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import ReactMarkdown from "react-markdown";
+import { useEffect, useState } from "react";
+import { Newspaper, Mic } from "lucide-react";
+
+type Brief = {
+  title: string;
+  link: string;
+  pubDate: string;
+  source: string;
+  summary: string;
+};
+
+export default function BriefDuJour() {
+  const [briefs, setBriefs] = useState<Brief[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [podcastScript, setPodcastScript] = useState<string>("");
+  const [generatingScript, setGeneratingScript] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/brief")
+      .then((res) => res.json())
+      .then((data) => {
+        setBriefs(data.briefs || []);
+        setLoading(false);
+      });
+  }, []);
+
+  const generatePodcastScript = async () => {
+    setGeneratingScript(true);
+    try {
+      const response = await fetch("/api/podcast-script", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ briefs }),
+      });
+      const data = await response.json();
+      setPodcastScript(data.script);
+    } catch (error) {
+      console.error("Erreur lors de la génération du script:", error);
+    } finally {
+      setGeneratingScript(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-zinc-100 px-4 py-10">
+        <p className="text-center text-zinc-400">Chargement des briefs...</p>
+      </div>
+    );
+  }
+
+  if (!briefs || briefs.length === 0) {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-zinc-100 px-4 py-10">
+        <p className="text-center text-zinc-400">Aucun brief disponible.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 px-4 py-10">
+      <div className="max-w-3xl mx-auto">
+        <div className="flex items-center justify-center gap-3 mb-10">
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center gap-3">
+              <Newspaper className="w-8 h-8 text-purple-400" />
+              <h1 className="text-3xl font-bold">Brief Tech du Jour</h1>
+            </div>
+            <p className="text-base text-zinc-400">
+              {new Date().toLocaleDateString("fr-FR")}
+            </p>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        {briefs.map((brief, i) => (
+          <div
+            key={i}
+            className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-6 shadow hover:shadow-lg transition-all"
+          >
+            <a href={brief.link} target="_blank" rel="noopener noreferrer">
+              <h2 className="text-xl font-semibold text-purple-300 hover:underline">
+                {brief.title}
+              </h2>
+            </a>
+            <p className="text-sm text-zinc-400 mt-1">
+              {new Date(brief.pubDate).toLocaleDateString("fr-FR")} ·{" "}
+              {brief.source}
+            </p>
+            <div className="mt-4 text-zinc-200 prose prose-invert prose-sm max-w-none font-mono">
+              <ReactMarkdown>{brief.summary}</ReactMarkdown>
+            </div>
+          </div>
+        ))}
+
+        {/* Bouton pour générer le script de podcast */}
+        <div className="mt-10 flex justify-center">
+          <button
+            onClick={generatePodcastScript}
+            disabled={generatingScript}
+            className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+          >
+            <Mic className="w-5 h-5" />
+            {generatingScript
+              ? "Génération du script..."
+              : "Générer le script podcast"}
+          </button>
+        </div>
+
+        {/* Affichage du script de podcast */}
+        {podcastScript && (
+          <div className="mt-8 bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+            <h3 className="text-xl font-bold text-purple-300 mb-4 flex items-center gap-2">
+              <Mic className="w-6 h-6" />
+              Script Podcast
+            </h3>
+            <div className="text-zinc-200 prose prose-invert prose-sm max-w-none">
+              <ReactMarkdown>{podcastScript}</ReactMarkdown>
+            </div>
+          </div>
+        )}
+
+        {/* Pied de page */}
+        <footer className="mt-16 pt-8 border-t border-zinc-800">
+          <div className="text-center text-zinc-400 text-sm space-y-3">
+            <p>
+              Développé par{" "}
+              <a
+                href="https://www.linkedin.com/in/solal-maurel-592784236/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-purple-300 font-medium hover:underline"
+              >
+                Solal Maurel
+              </a>
+            </p>
+            <p className="text-xs leading-relaxed max-w-2xl mx-auto">
+              <strong className="text-zinc-300">Disclaimer :</strong> Ce site
+              agrège des contenus issus de flux RSS publics de sites de presse
+              technologique. Les articles et informations présentés restent la
+              propriété de leurs auteurs respectifs. Cette expérimentation est
+              fournie à des fins d'apprentissage uniquement et ne constitue pas
+              une republication des contenus originaux.
+            </p>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }

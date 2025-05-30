@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { DEFAULT_ARTICLE_LIMIT } from "@/config/feeds";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -7,14 +8,14 @@ const openai = new OpenAI({
 export async function selectArticles(titles: string[]) {
   const prompt = `
     Tu es un assistant de vulgarisation technique.
-    Tu dois sélectionner 3 à 5 articles les plus pertinents pour des amateurs de technologie et d'IA parmi les titres suivants :
+    Tu dois sélectionner les 10 articles les plus pertinents pour des amateurs de technologie et d'IA parmi les titres suivants :
     ${titles.map((title, index) => `${index}. ${title}`).join("\n")}
     
-    IMPORTANT: Tu dois répondre UNIQUEMENT avec 3 nombres séparés par des virgules, représentant les indices des articles.
+    IMPORTANT: Tu dois répondre UNIQUEMENT avec 10 nombres séparés par des virgules, représentant les indices des articles.
     Format de réponse attendu: X,Y,Z où X, Y et Z sont des nombres entre 0 et ${
       titles.length - 1
     }
-    Exemple de réponse valide: 0,2,3 (sans guillemets)
+    Exemple de réponse valide: 0,2,3,6,12,45,32,12,4,56 (sans guillemets)
     `;
 
   const chat = await openai.chat.completions.create({
@@ -36,7 +37,7 @@ export async function selectArticles(titles: string[]) {
   const indexes = response.trim().split(",").map(Number);
   console.log(indexes);
   if (
-    indexes.length !== 3 ||
+    indexes.length !== DEFAULT_ARTICLE_LIMIT ||
     indexes.some(isNaN) ||
     indexes.some((i: number) => i >= titles.length)
   ) {

@@ -2,6 +2,10 @@
 
 Une application Next.js pour suivre l'actualité technologique via des flux RSS et générer des résumés automatiques.
 
+## 📸 Aperçu de l'application
+
+![Example de la page Brief Tech du Jour](ex_page.jpg)
+
 ## 🏗️ Structure du projet
 
 ```
